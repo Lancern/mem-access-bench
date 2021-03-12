@@ -19,7 +19,7 @@ public:
   /**
    * @brief Construct a new RawAllocator object.
    */
-  explicit RawAllocator();
+  explicit RawAllocator() noexcept;
 
   RawAllocator(const RawAllocator &) = delete;
   RawAllocator(RawAllocator &&) noexcept = delete;
@@ -58,6 +58,13 @@ private:
   std::mutex _mutex;
   std::list<Chunk> _chunks;
 }; // class Allocator
+
+/**
+ * @brief Get the global memory allocator.
+ *
+ * @return pointer to the global memory allocator.
+ */
+RawAllocator* GetGlobalAllocator() noexcept;
 
 /**
  * @brief Allocate memory chunks for storing objects of the specified type.

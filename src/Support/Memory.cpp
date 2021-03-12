@@ -141,7 +141,7 @@ struct RawAllocator::Chunk {
   }
 };
 
-RawAllocator::RawAllocator() = default;
+RawAllocator::RawAllocator() noexcept = default;
 
 RawAllocator::~RawAllocator() noexcept {
   // Free all allocated chunks.
