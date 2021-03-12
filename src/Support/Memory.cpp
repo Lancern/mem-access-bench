@@ -143,7 +143,15 @@ struct RawAllocator::Chunk {
 
 RawAllocator::RawAllocator() = default;
 
-RawAllocator::~RawAllocator() noexcept = default;
+RawAllocator::~RawAllocator() noexcept {
+  // Free all allocated chunks.
+  for (const auto& chunk : _chunks) {
+    if (chunk.isFirst) {
+      ::free(chunk.ptr);
+    }
+  }
+  _chunks.clear();
+}
 
 void* RawAllocator::Allocate(size_t size, size_t alignment) {
   assert(size > 0 && "size should be a positive value");

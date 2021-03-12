@@ -1,2 +1,3 @@
 add_mab_test(Support
-        DeferTests.cpp)
+        DeferTests.cpp
+        MemoryTests.cpp)
