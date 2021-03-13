@@ -107,6 +107,15 @@ public:
   { }
 
   /**
+   * @brief Construct a new JsonObject that represents a string value.
+   *
+   * @param value the string value.
+   */
+  explicit JsonObject(const char* value) noexcept
+    : _data(std::in_place_type_t<StringType>(), value)
+  { }
+
+  /**
    * @brief Construct a new JsonObject that represents an array value.
    */
   explicit JsonObject(JsonArrayTag) noexcept

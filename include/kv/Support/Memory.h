@@ -2,12 +2,51 @@
 #define KV_SUPPORT_MEMORY_H
 
 #include <cstddef>
+#include <cstdlib>
 #include <list>
 #include <memory>
 #include <mutex>
+#include <type_traits>
 #include <utility>
 
 namespace kv {
+
+namespace details {
+
+template <typename T>
+class LibcAllocator {
+public:
+  using value_type = T;
+
+  using is_always_equal = std::true_type;
+
+  [[nodiscard]]
+  T* allocate(size_t n) const {
+    auto ptr = ::malloc(sizeof(T) * n);
+    if (!ptr) {
+      throw std::bad_alloc { };
+    }
+    return reinterpret_cast<T *>(ptr);
+  }
+
+  void deallocate(T* ptr, size_t) const noexcept {
+    ::free(ptr);
+  }
+
+  template <typename U>
+  [[nodiscard]]
+  bool operator==(const LibcAllocator<U> &) const noexcept {
+    return true;
+  }
+
+  template <typename U>
+  [[nodiscard]]
+  bool operator!=(const LibcAllocator<U> &) const noexcept {
+    return false;
+  }
+}; // class LibcAllocator
+
+} // namespace details
 
 /**
  * @brief Allocate raw memory chunks.
@@ -58,7 +97,7 @@ private:
   struct Chunk;
 
   std::mutex _mutex;
-  std::list<Chunk> _chunks;
+  std::list<Chunk, details::LibcAllocator<Chunk>> _chunks;
 }; // class Allocator
 
 /**

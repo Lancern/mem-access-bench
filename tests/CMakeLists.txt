@@ -9,3 +9,4 @@ function(add_mab_test name)
 endfunction()
 
 add_subdirectory(Support)
+add_subdirectory(Json)
