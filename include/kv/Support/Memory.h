@@ -3,7 +3,9 @@
 
 #include <cstddef>
 #include <list>
+#include <memory>
 #include <mutex>
+#include <utility>
 
 namespace kv {
 
@@ -82,6 +84,13 @@ public:
   using value_type = T;
 
   /**
+   * @brief Construct a new ObjectAllocator object using the global raw memory allocator.
+   */
+  explicit ObjectAllocator() noexcept
+    : _raw(GetGlobalAllocator())
+  { }
+
+  /**
    * @brief Construct a new ObjectAllocator object.
    *
    * @param raw the underlying raw memory allocator.
@@ -152,6 +161,41 @@ private:
   RawAllocator* _raw;
 }; // class ObjectAllocator
 
+/**
+ * @brief Deleter for smart pointers whose pointee is allocated by RawAllocator.
+ *
+ * @tparam T the type of the pointee object.
+ */
+template <typename T>
+class ObjectDeleter {
+public:
+  /**
+   * @brief Construct a new ObjectDeleter object with the specified object allocator.
+   *
+   * @param allocator the object allocator used for deallocating objects.
+   */
+  explicit ObjectDeleter(ObjectAllocator<T> allocator = ObjectAllocator<T>()) noexcept
+    : _allocator(allocator)
+  { }
+
+  void operator()(T* obj) const noexcept {
+    _allocator.deallocate(obj);
+  }
+
+private:
+  ObjectAllocator<T> _allocator;
+}; // class ObjectDeleter
+
 } // namespace kv
+
+[[nodiscard]]
+void* operator new(size_t count);
+
+[[nodiscard]]
+void* operator new(size_t count, std::align_val_t alignment);
+
+void operator delete(void* ptr) noexcept;
+
+void operator delete(void* ptr, std::align_val_t alignment) noexcept;
 
 #endif // KV_SUPPORT_MEMORY_H
